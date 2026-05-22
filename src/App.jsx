@@ -106,7 +106,6 @@ export default function App() {
           style={styles.login}
         >
           <h1>⚡ Alex Hub</h1>
-          <p style={{ opacity: 0.6 }}>Secure Access</p>
           <button style={styles.btn} onClick={login}>
             🔐 Login Google
           </button>
@@ -117,7 +116,6 @@ export default function App() {
 
   return (
     <div style={styles.bg}>
-
       <div style={styles.blob1}></div>
       <div style={styles.blob2}></div>
       <div style={styles.blob3}></div>
@@ -126,10 +124,7 @@ export default function App() {
 
         <div style={styles.header}>
           <h1>⚡ Alex Hub</h1>
-
-          <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={logout}>Logout</button>
-          </div>
+          <button onClick={logout}>Logout</button>
         </div>
 
         <div style={styles.nav}>
@@ -146,21 +141,41 @@ export default function App() {
           onChange={(e) => setSearch(e.target.value)}
         />
 
+        {/* 🧠 ADMIN PANEL (FIXED) */}
         {isAdmin && (
           <div style={styles.admin}>
             <h3>🧠 Admin Panel</h3>
 
-            <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-            <input placeholder="URL" value={url} onChange={(e) => setUrl(e.target.value)} />
-            <input placeholder="Logo" value={logo} onChange={(e) => setLogo(e.target.value)} />
+            <input
+              placeholder="Nom"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
 
-            <select value={category} onChange={(e) => setCategory(e.target.value)}>
-              <option value="Software">Software</option>
-              <option value="Torrents">Torrents</option>
-              <option value="Adobe">Adobe</option>
+            <input
+              placeholder="Lien URL"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+            />
+
+            <input
+              placeholder="Logo URL"
+              value={logo}
+              onChange={(e) => setLogo(e.target.value)}
+            />
+
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              <option value="Software">💻 Software</option>
+              <option value="Torrents">📦 Torrents</option>
+              <option value="Adobe">🎨 Adobe</option>
             </select>
 
-            <button onClick={addApp} style={styles.btn}>+ Add</button>
+            <button onClick={addApp} style={styles.btn}>
+              ➕ Ajouter
+            </button>
           </div>
         )}
 
@@ -194,6 +209,7 @@ export default function App() {
   );
 }
 
+/* 🎨 DESIGN PREMIUM */
 const styles = {
   bg: {
     minHeight: "100vh",
