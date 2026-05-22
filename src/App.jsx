@@ -21,8 +21,13 @@ export default function App() {
   const provider = new GoogleAuthProvider();
 
   const login = async () => {
-    await signInWithPopup(auth, provider);
-  };
+  try {
+    const result = await signInWithPopup(auth, provider);
+    console.log("User:", result.user);
+  } catch (error) {
+    console.log("Login error:", error.message);
+  }
+};
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "apps"), (snapshot) => {
