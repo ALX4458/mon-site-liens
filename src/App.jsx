@@ -166,4 +166,14 @@ const styles = {
     fontSize: "18px",
     cursor: "pointer",
   },
-};
+};<div class="grid">
+  <a class="card" href="https://code.visualstudio.com/" target="_blank">
+    <img src="/logos/vscode.png" alt="VS Code logo" />
+    <h3>Visual Studio Code</h3>
+  </a>
+
+  <a class="card" href="https://github.com/" target="_blank">
+    <img src="/logos/github.png" alt="GitHub logo" />
+    <h3>GitHub</h3>
+  </a>
+</div>
