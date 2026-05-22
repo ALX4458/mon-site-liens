@@ -166,14 +166,28 @@ const styles = {
     fontSize: "18px",
     cursor: "pointer",
   },
-};<div class="grid">
-  <a class="card" href="https://code.visualstudio.com/" target="_blank">
-    <img src="/logos/vscode.png" alt="VS Code logo" />
-    <h3>Visual Studio Code</h3>
-  </a>
+};const apps = [
+  {
+    name: "VS Code",
+    logo: "/logos/vscode.png",
+    link: "https://code.visualstudio.com/"
+  },
+  {
+    name: "GitHub",
+    logo: "/logos/github.png",
+    link: "https://github.com/"
+  }
+];
 
-  <a class="card" href="https://github.com/" target="_blank">
-    <img src="/logos/github.png" alt="GitHub logo" />
-    <h3>GitHub</h3>
-  </a>
-</div>
+export default function Home() {
+  return (
+    <div className="grid">
+      {apps.map((app) => (
+        <a key={app.name} href={app.link} target="_blank" className="card">
+          <img src={app.logo} alt={app.name} />
+          <h3>{app.name}</h3>
+        </a>
+      ))}
+    </div>
+  );
+}
