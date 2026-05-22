@@ -26,8 +26,8 @@ export default function App() {
   const [logo, setLogo] = useState("");
   const [category, setCategory] = useState("Software");
 
-  const [view, setView] = useState("all");
   const [search, setSearch] = useState("");
+  const [view, setView] = useState("all");
   const [dark, setDark] = useState(true);
   const [favorites, setFavorites] = useState([]);
 
@@ -57,6 +57,7 @@ export default function App() {
       url,
       logo,
       category,
+      createdAt: Date.now(),
     });
 
     setName("");
@@ -79,17 +80,9 @@ export default function App() {
   const filtered = useMemo(() => {
     let list = apps;
 
-    if (view === "software") {
-      list = list.filter((a) => a.category === "Software");
-    }
-
-    if (view === "torrents") {
-      list = list.filter((a) => a.category === "Torrents");
-    }
-
-    if (view === "adobe") {
-      list = list.filter((a) => a.category === "Adobe");
-    }
+    if (view === "software") list = list.filter(a => a.category === "Software");
+    if (view === "torrents") list = list.filter(a => a.category === "Torrents");
+    if (view === "adobe") list = list.filter(a => a.category === "Adobe");
 
     return list.filter((a) =>
       a.name.toLowerCase().includes(search.toLowerCase())
@@ -100,11 +93,11 @@ export default function App() {
     return (
       <div style={styles.bg(dark)}>
         <div style={styles.loginCard}>
-          <h1>🔥 Alex Crack</h1>
-          <p style={{ opacity: 0.6 }}>Accès privé</p>
+          <h1 style={{ fontSize: 32 }}>⚡ Alex Hub</h1>
+          <p style={{ opacity: 0.6 }}>Accès sécurisé</p>
 
-          <button onClick={login} style={styles.primaryBtn}>
-            🔐 Login Google
+          <button style={styles.primaryBtn} onClick={login}>
+            🔐 Se connecter
           </button>
         </div>
       </div>
@@ -117,37 +110,37 @@ export default function App() {
 
         {/* HEADER */}
         <div style={styles.header}>
-          <h1>🔥 Alex Crack</h1>
+          <h1>⚡ Alex Hub</h1>
 
           <div style={{ display: "flex", gap: 10 }}>
             <button onClick={() => setDark(!dark)}>
-              {dark ? "🌞" : "🌙"}
+              {dark ? "🌙" : "☀️"}
             </button>
             <button onClick={logout}>Logout</button>
           </div>
         </div>
 
-        {/* NAV TABS */}
+        {/* NAV */}
         <div style={styles.nav}>
-          <button onClick={() => setView("all")}>🌍 Tout</button>
-          <button onClick={() => setView("software")}>💻 Logiciels</button>
+          <button onClick={() => setView("all")}>🌍 All</button>
+          <button onClick={() => setView("software")}>💻 Software</button>
           <button onClick={() => setView("torrents")}>📦 Torrents</button>
           <button onClick={() => setView("adobe")}>🎨 Adobe</button>
         </div>
 
         {/* SEARCH */}
         <input
-          placeholder="🔎 Search apps..."
+          style={styles.search}
+          placeholder="Search apps..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          style={styles.search}
         />
 
         {/* FORM */}
         <div style={styles.form}>
-          <input placeholder="Nom" value={name} onChange={(e) => setName(e.target.value)} />
-          <input placeholder="Lien" value={url} onChange={(e) => setUrl(e.target.value)} />
-          <input placeholder="Logo URL" value={logo} onChange={(e) => setLogo(e.target.value)} />
+          <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+          <input placeholder="URL" value={url} onChange={(e) => setUrl(e.target.value)} />
+          <input placeholder="Logo" value={logo} onChange={(e) => setLogo(e.target.value)} />
 
           <select value={category} onChange={(e) => setCategory(e.target.value)}>
             <option value="Software">💻 Software</option>
@@ -177,13 +170,9 @@ export default function App() {
                 </a>
               </div>
 
-              <button onClick={() => toggleFav(app.id)}>
-                ⭐
-              </button>
+              <button onClick={() => toggleFav(app.id)}>⭐</button>
+              <button onClick={() => remove(app.id)}>✕</button>
 
-              <button onClick={() => remove(app.id)}>
-                ✕
-              </button>
             </div>
           ))}
         </div>
@@ -193,19 +182,19 @@ export default function App() {
   );
 }
 
-/* 🎨 ULTRA DESIGN */
+/* 🎨 CLEAN DESIGN SYSTEM */
 const styles = {
   bg: (dark) => ({
     minHeight: "100vh",
     padding: 30,
     color: "white",
     background: dark
-      ? "radial-gradient(circle at top,#1b1b1b,#0f0f0f)"
-      : "linear-gradient(135deg,#f5f5f5,#ffffff)",
+      ? "radial-gradient(circle at top,#1c1c1c,#0d0d0d)"
+      : "#f6f6f6",
     transition: "0.3s",
   }),
 
-  container: { maxWidth: 950, margin: "auto" },
+  container: { maxWidth: 1000, margin: "auto" },
 
   header: {
     display: "flex",
@@ -217,6 +206,7 @@ const styles = {
     display: "flex",
     gap: 10,
     marginBottom: 15,
+    flexWrap: "wrap",
   },
 
   search: {
@@ -232,12 +222,12 @@ const styles = {
     display: "flex",
     gap: 10,
     flexWrap: "wrap",
-    marginBottom: 25,
+    marginBottom: 20,
   },
 
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
+    gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))",
     gap: 15,
   },
 
@@ -246,12 +236,9 @@ const styles = {
     gap: 12,
     padding: 14,
     borderRadius: 18,
-    background: dark
-      ? "rgba(255,255,255,0.06)"
-      : "rgba(255,255,255,0.9)",
-    backdropFilter: "blur(10px)",
-    transition: "0.3s",
-    transform: "scale(1)",
+    background: dark ? "rgba(255,255,255,0.06)" : "white",
+    transition: "0.2s",
+    transform: "translateY(0)",
   }),
 
   logo: {
@@ -262,13 +249,13 @@ const styles = {
 
   tag: {
     fontSize: 12,
-    opacity: 0.7,
+    opacity: 0.6,
     marginTop: 4,
   },
 
   link: {
     display: "block",
-    marginTop: 5,
+    marginTop: 6,
     color: "#60a5fa",
     textDecoration: "none",
   },
