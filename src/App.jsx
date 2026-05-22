@@ -96,10 +96,19 @@ export default function App() {
   if (!user) {
     return (
       <div style={styles.bg}>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={styles.login}>
+        <div style={styles.blob1}></div>
+        <div style={styles.blob2}></div>
+        <div style={styles.blob3}></div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={styles.login}
+        >
           <h1>⚡ Alex Hub</h1>
+          <p style={{ opacity: 0.6 }}>Secure Access</p>
           <button style={styles.btn} onClick={login}>
-            🔐 Login
+            🔐 Login Google
           </button>
         </motion.div>
       </div>
@@ -108,11 +117,19 @@ export default function App() {
 
   return (
     <div style={styles.bg}>
+
+      <div style={styles.blob1}></div>
+      <div style={styles.blob2}></div>
+      <div style={styles.blob3}></div>
+
       <div style={styles.container}>
 
         <div style={styles.header}>
           <h1>⚡ Alex Hub</h1>
-          <button onClick={logout}>Logout</button>
+
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={logout}>Logout</button>
+          </div>
         </div>
 
         <div style={styles.nav}>
@@ -131,7 +148,7 @@ export default function App() {
 
         {isAdmin && (
           <div style={styles.admin}>
-            <h3>Admin Panel</h3>
+            <h3>🧠 Admin Panel</h3>
 
             <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
             <input placeholder="URL" value={url} onChange={(e) => setUrl(e.target.value)} />
@@ -159,6 +176,7 @@ export default function App() {
               <div style={{ flex: 1 }}>
                 <b>{app.name}</b>
                 <div style={styles.tag}>{app.category}</div>
+
                 <a href={app.url} target="_blank">Open →</a>
               </div>
 
@@ -181,10 +199,53 @@ const styles = {
     minHeight: "100vh",
     padding: 30,
     color: "white",
-    background: "linear-gradient(135deg,#0f0c29,#302b63,#24243e)",
+    background: "linear-gradient(135deg,#0b0b1a,#1a1a2e,#0f0f2d)",
+    position: "relative",
+    overflow: "hidden",
   },
 
-  container: { maxWidth: 1000, margin: "auto" },
+  blob1: {
+    position: "absolute",
+    width: 300,
+    height: 300,
+    background: "#7c3aed",
+    filter: "blur(120px)",
+    borderRadius: "50%",
+    top: -100,
+    left: -100,
+    opacity: 0.4,
+  },
+
+  blob2: {
+    position: "absolute",
+    width: 250,
+    height: 250,
+    background: "#06b6d4",
+    filter: "blur(120px)",
+    borderRadius: "50%",
+    bottom: -80,
+    right: -80,
+    opacity: 0.4,
+  },
+
+  blob3: {
+    position: "absolute",
+    width: 200,
+    height: 200,
+    background: "#f97316",
+    filter: "blur(120px)",
+    borderRadius: "50%",
+    top: "40%",
+    left: "50%",
+    opacity: 0.25,
+  },
+
+  container: {
+    maxWidth: 1000,
+    margin: "auto",
+    position: "relative",
+    zIndex: 2,
+  },
 
   header: {
     display: "flex",
@@ -201,9 +262,13 @@ const styles = {
   search: {
     width: "100%",
     padding: 14,
-    borderRadius: 12,
+    borderRadius: 14,
     marginBottom: 20,
     border: "none",
+    outline: "none",
+    background: "rgba(255,255,255,0.1)",
+    color: "white",
+    backdropFilter: "blur(10px)",
   },
 
   admin: {
@@ -211,6 +276,7 @@ const styles = {
     borderRadius: 16,
     background: "rgba(255,255,255,0.08)",
     marginBottom: 20,
+    backdropFilter: "blur(10px)",
     display: "flex",
     flexDirection: "column",
     gap: 10,
@@ -228,6 +294,8 @@ const styles = {
     padding: 14,
     borderRadius: 18,
     background: "rgba(255,255,255,0.08)",
+    backdropFilter: "blur(12px)",
+    border: "1px solid rgba(255,255,255,0.1)",
   },
 
   logo: {
@@ -243,7 +311,7 @@ const styles = {
 
   btn: {
     padding: 10,
-    background: "#7c3aed",
+    background: "linear-gradient(135deg,#7c3aed,#06b6d4)",
     color: "white",
     border: "none",
     borderRadius: 10,
@@ -254,5 +322,8 @@ const styles = {
     padding: 50,
     borderRadius: 20,
     background: "rgba(255,255,255,0.08)",
+    backdropFilter: "blur(10px)",
+    position: "relative",
+    zIndex: 2,
   },
 };
