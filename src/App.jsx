@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { db } from "./firebase.js";
 
 import {
@@ -24,6 +24,11 @@ export default function App() {
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
   const [logo, setLogo] = useState("");
+  const [category, setCategory] = useState("Tools");
+
+  const [search, setSearch] = useState("");
+  const [dark, setDark] = useState(true);
+  const [favorites, setFavorites] = useState([]);
 
   const auth = getAuth();
   const provider = new GoogleAuthProvider();
@@ -50,6 +55,7 @@ export default function App() {
       name,
       url,
       logo,
+      category,
     });
 
     setName("");
@@ -61,15 +67,27 @@ export default function App() {
     await deleteDoc(doc(db, "apps", id));
   };
 
+  const toggleFav = (id) => {
+    setFavorites((prev) =>
+      prev.includes(id)
+        ? prev.filter((f) => f !== id)
+        : [...prev, id]
+    );
+  };
+
+  const filtered = useMemo(() => {
+    return apps.filter((a) =>
+      a.name.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [apps, search]);
+
   if (!user) {
     return (
-      <div style={styles.bg}>
+      <div style={styles.bg(dark)}>
         <div style={styles.loginCard}>
-          <h1 style={styles.title}>Alex Crack</h1>
-          <p style={styles.sub}>Accès privé</p>
-
-          <button style={styles.primaryBtn} onClick={login}>
-            🔐 Se connecter avec Google
+          <h1>🔥 Alex Crack</h1>
+          <button onClick={login} style={styles.primaryBtn}>
+            Login Google
           </button>
         </div>
       </div>
@@ -77,38 +95,71 @@ export default function App() {
   }
 
   return (
-    <div style={styles.bg}>
+    <div style={styles.bg(dark)}>
       <div style={styles.container}>
 
+        {/* HEADER */}
         <div style={styles.header}>
-          <h1 style={styles.title}>Alex Crack</h1>
-          <button style={styles.logoutBtn} onClick={logout}>
-            Logout
+          <h1>🔥 Alex Crack</h1>
+
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={() => setDark(!dark)}>
+              {dark ? "🌞" : "🌙"}
+            </button>
+
+            <button onClick={logout}>Logout</button>
+          </div>
+        </div>
+
+        {/* SEARCH */}
+        <input
+          placeholder="🔎 Search..."
+          style={styles.search}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        {/* FORM */}
+        <div style={styles.form}>
+          <input placeholder="Nom" value={name} onChange={(e) => setName(e.target.value)} />
+          <input placeholder="Lien" value={url} onChange={(e) => setUrl(e.target.value)} />
+          <input placeholder="Logo URL" value={logo} onChange={(e) => setLogo(e.target.value)} />
+
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+            <option>Tools</option>
+            <option>Adobe</option>
+            <option>Dev</option>
+            <option>Other</option>
+          </select>
+
+          <button onClick={addApp} style={styles.primaryBtn}>
+            + Add
           </button>
         </div>
 
-        <div style={styles.formCard}>
-          <input style={styles.input} placeholder="Nom" value={name} onChange={(e) => setName(e.target.value)} />
-          <input style={styles.input} placeholder="Lien" value={url} onChange={(e) => setUrl(e.target.value)} />
-          <input style={styles.input} placeholder="Logo URL" value={logo} onChange={(e) => setLogo(e.target.value)} />
-
-          <button style={styles.primaryBtn} onClick={addApp}>
-            + Ajouter
-          </button>
-        </div>
-
+        {/* GRID */}
         <div style={styles.grid}>
-          {apps.map((app) => (
-            <div key={app.id} style={styles.card}>
+          {filtered.map((app) => (
+            <div key={app.id} style={styles.card(dark)}>
+
               <img src={app.logo} style={styles.logo} />
-              <div>
-                <h3 style={styles.appName}>{app.name}</h3>
-                <a href={app.url} target="_blank" style={styles.link}>
-                  Ouvrir →
+
+              <div style={{ flex: 1 }}>
+                <b>{app.name}</b>
+                <div style={{ fontSize: 12, opacity: 0.6 }}>
+                  {app.category}
+                </div>
+
+                <a href={app.url} target="_blank">
+                  Open →
                 </a>
               </div>
 
-              <button style={styles.deleteBtn} onClick={() => remove(app.id)}>
+              <button onClick={() => toggleFav(app.id)}>
+                ⭐
+              </button>
+
+              <button onClick={() => remove(app.id)}>
                 ✕
               </button>
             </div>
@@ -120,108 +171,67 @@ export default function App() {
   );
 }
 
+/* 🎨 STYLE PRO */
 const styles = {
-  bg: {
+  bg: (dark) => ({
     minHeight: "100vh",
-    background: "linear-gradient(135deg,#0f0f0f,#1b1b1b)",
-    color: "white",
-    display: "flex",
-    justifyContent: "center",
     padding: 30,
-  },
+    color: "white",
+    background: dark
+      ? "linear-gradient(135deg,#0f0f0f,#1b1b1b)"
+      : "linear-gradient(135deg,#f5f5f5,#ffffff)",
+  }),
+
   container: {
-    width: "100%",
     maxWidth: 900,
+    margin: "auto",
   },
+
   header: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 30,
+    marginBottom: 20,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    letterSpacing: 1,
+
+  search: {
+    width: "100%",
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 20,
   },
-  sub: {
-    opacity: 0.6,
-  },
-  loginCard: {
-    background: "rgba(255,255,255,0.05)",
-    padding: 40,
-    borderRadius: 20,
-    textAlign: "center",
-    backdropFilter: "blur(10px)",
-  },
-  formCard: {
-    background: "rgba(255,255,255,0.05)",
-    padding: 20,
-    borderRadius: 16,
+
+  form: {
     display: "flex",
-    flexDirection: "column",
     gap: 10,
-    marginBottom: 25,
-    backdropFilter: "blur(10px)",
+    flexWrap: "wrap",
+    marginBottom: 20,
   },
-  input: {
-    padding: 12,
-    borderRadius: 10,
-    border: "none",
-    outline: "none",
-  },
-  primaryBtn: {
-    padding: 12,
-    borderRadius: 10,
-    border: "none",
-    cursor: "pointer",
-    background: "#4f46e5",
-    color: "white",
-    fontWeight: "bold",
-  },
-  logoutBtn: {
-    background: "transparent",
-    border: "1px solid white",
-    color: "white",
-    padding: "8px 12px",
-    borderRadius: 10,
-    cursor: "pointer",
-  },
+
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
     gap: 15,
   },
-  card: {
-    background: "rgba(255,255,255,0.05)",
-    padding: 15,
-    borderRadius: 16,
+
+  card: (dark) => ({
     display: "flex",
-    alignItems: "center",
-    gap: 12,
-    backdropFilter: "blur(10px)",
-    position: "relative",
-  },
+    gap: 10,
+    padding: 12,
+    borderRadius: 16,
+    background: dark ? "rgba(255,255,255,0.05)" : "white",
+  }),
+
   logo: {
     width: 40,
     height: 40,
     borderRadius: 10,
   },
-  appName: {
-    margin: 0,
-  },
-  link: {
-    color: "#60a5fa",
-    textDecoration: "none",
-  },
-  deleteBtn: {
-    position: "absolute",
-    right: 10,
-    top: 10,
-    background: "transparent",
-    border: "none",
+
+  primaryBtn: {
+    padding: 10,
+    background: "#4f46e5",
     color: "white",
-    cursor: "pointer",
-    fontSize: 16,
+    border: "none",
+    borderRadius: 10,
   },
 };
