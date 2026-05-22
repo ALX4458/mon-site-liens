@@ -47,7 +47,6 @@ export default function App() {
   const login = () => signInWithPopup(auth, provider);
   const logout = () => signOut(auth);
 
-  // ✅ AJOUT TOUJOURS POSSIBLE (IMPORTANT)
   const addApp = async () => {
     if (!name || !url || !logo) return;
 
@@ -57,7 +56,6 @@ export default function App() {
       logo,
       category,
       createdAt: Date.now(),
-      createdBy: user?.email || "anonymous",
     });
 
     setName("");
@@ -104,6 +102,15 @@ export default function App() {
           <button onClick={logout}>Logout</button>
         </div>
 
+        {/* NAV CATEGORIES */}
+        <div style={styles.nav}>
+          <button onClick={() => setView("all")}>🌍 All</button>
+          <button onClick={() => setView("software")}>💻 Software</button>
+          <button onClick={() => setView("torrents")}>📦 Torrents</button>
+          <button onClick={() => setView("adobe")}>🎨 Adobe</button>
+        </div>
+
+        {/* SEARCH */}
         <input
           style={styles.search}
           placeholder="Search..."
@@ -111,7 +118,7 @@ export default function App() {
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        {/* ✅ FORMULAIRE AJOUT TOUJOURS ACTIF */}
+        {/* ADD FORM */}
         <div style={styles.admin}>
           <h3>➕ Ajouter un lien</h3>
 
@@ -156,7 +163,6 @@ export default function App() {
               <div style={{ flex: 1 }}>
                 <b>{app.name}</b>
                 <div style={styles.tag}>{app.category}</div>
-
                 <a href={app.url} target="_blank">Open →</a>
               </div>
 
@@ -170,6 +176,7 @@ export default function App() {
   );
 }
 
+/* 🎨 STYLES */
 const styles = {
   bg: {
     minHeight: "100vh",
@@ -184,6 +191,12 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     marginBottom: 20,
+  },
+
+  nav: {
+    display: "flex",
+    gap: 10,
+    marginBottom: 15,
   },
 
   search: {
