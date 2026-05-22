@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { db } from "./firebase.js";
 
 import {
@@ -24,10 +24,12 @@ export default function App() {
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
   const [logo, setLogo] = useState("");
-  const [category, setCategory] = useState("Tools");
+  const [category, setCategory] = useState("Software");
 
   const [search, setSearch] = useState("");
   const [dark, setDark] = useState(true);
+
+  const [view, setView] = useState("all");
   const [favorites, setFavorites] = useState([]);
 
   const auth = getAuth();
@@ -76,18 +78,26 @@ export default function App() {
   };
 
   const filtered = useMemo(() => {
-    return apps.filter((a) =>
+    let list = apps;
+
+    // 💻 SECTION LOGICIELS
+    if (view === "software") {
+      list = list.filter((a) => a.category === "Software");
+    }
+
+    return list.filter((a) =>
       a.name.toLowerCase().includes(search.toLowerCase())
     );
-  }, [apps, search]);
+  }, [apps, search, view]);
 
+  // 🔐 LOGIN SCREEN
   if (!user) {
     return (
       <div style={styles.bg(dark)}>
         <div style={styles.loginCard}>
           <h1>🔥 Alex Crack</h1>
           <button onClick={login} style={styles.primaryBtn}>
-            Login Google
+            🔐 Se connecter Google
           </button>
         </div>
       </div>
@@ -111,6 +121,12 @@ export default function App() {
           </div>
         </div>
 
+        {/* NAVIGATION */}
+        <div style={styles.nav}>
+          <button onClick={() => setView("all")}>🌍 Tout</button>
+          <button onClick={() => setView("software")}>💻 Logiciels</button>
+        </div>
+
         {/* SEARCH */}
         <input
           placeholder="🔎 Search..."
@@ -126,18 +142,18 @@ export default function App() {
           <input placeholder="Logo URL" value={logo} onChange={(e) => setLogo(e.target.value)} />
 
           <select value={category} onChange={(e) => setCategory(e.target.value)}>
-            <option>Tools</option>
-            <option>Adobe</option>
-            <option>Dev</option>
-            <option>Other</option>
+            <option value="Software">💻 Logiciels</option>
+            <option value="Tools">🧰 Tools</option>
+            <option value="Adobe">🎨 Adobe</option>
+            <option value="Dev">💻 Dev</option>
           </select>
 
           <button onClick={addApp} style={styles.primaryBtn}>
-            + Add
+            + Ajouter
           </button>
         </div>
 
-        {/* GRID */}
+        {/* LIST */}
         <div style={styles.grid}>
           {filtered.map((app) => (
             <div key={app.id} style={styles.card(dark)}>
@@ -151,17 +167,12 @@ export default function App() {
                 </div>
 
                 <a href={app.url} target="_blank">
-                  Open →
+                  Ouvrir →
                 </a>
               </div>
 
-              <button onClick={() => toggleFav(app.id)}>
-                ⭐
-              </button>
-
-              <button onClick={() => remove(app.id)}>
-                ✕
-              </button>
+              <button onClick={() => toggleFav(app.id)}>⭐</button>
+              <button onClick={() => remove(app.id)}>✕</button>
             </div>
           ))}
         </div>
@@ -191,6 +202,12 @@ const styles = {
     display: "flex",
     justifyContent: "space-between",
     marginBottom: 20,
+  },
+
+  nav: {
+    display: "flex",
+    gap: 10,
+    marginBottom: 15,
   },
 
   search: {
@@ -233,5 +250,12 @@ const styles = {
     color: "white",
     border: "none",
     borderRadius: 10,
+  },
+
+  loginCard: {
+    textAlign: "center",
+    padding: 40,
+    borderRadius: 20,
+    background: "rgba(255,255,255,0.05)",
   },
 };
