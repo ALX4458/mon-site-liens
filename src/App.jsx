@@ -1,4 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
+import { motion } from "framer-motion";
+
 import { db } from "./firebase.js";
 
 import {
@@ -26,13 +28,15 @@ export default function App() {
   const [logo, setLogo] = useState("");
   const [category, setCategory] = useState("Software");
 
-  const [search, setSearch] = useState("");
   const [view, setView] = useState("all");
-  const [dark, setDark] = useState(true);
+  const [search, setSearch] = useState("");
   const [favorites, setFavorites] = useState([]);
 
   const auth = getAuth();
   const provider = new GoogleAuthProvider();
+
+  const ADMIN_EMAIL = "tonmail@gmail.com";
+  const isAdmin = user?.email === ADMIN_EMAIL;
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => setUser(u));
@@ -50,6 +54,7 @@ export default function App() {
   const logout = () => signOut(auth);
 
   const addApp = async () => {
+    if (!isAdmin) return;
     if (!name || !url || !logo) return;
 
     await addDoc(collection(db, "apps"), {
@@ -66,14 +71,13 @@ export default function App() {
   };
 
   const remove = async (id) => {
+    if (!isAdmin) return;
     await deleteDoc(doc(db, "apps", id));
   };
 
   const toggleFav = (id) => {
-    setFavorites((prev) =>
-      prev.includes(id)
-        ? prev.filter((f) => f !== id)
-        : [...prev, id]
+    setFavorites((p) =>
+      p.includes(id) ? p.filter((x) => x !== id) : [...p, id]
     );
   };
 
@@ -84,43 +88,33 @@ export default function App() {
     if (view === "torrents") list = list.filter(a => a.category === "Torrents");
     if (view === "adobe") list = list.filter(a => a.category === "Adobe");
 
-    return list.filter((a) =>
+    return list.filter(a =>
       a.name.toLowerCase().includes(search.toLowerCase())
     );
   }, [apps, search, view]);
 
   if (!user) {
     return (
-      <div style={styles.bg(dark)}>
-        <div style={styles.loginCard}>
-          <h1 style={{ fontSize: 32 }}>⚡ Alex Hub</h1>
-          <p style={{ opacity: 0.6 }}>Accès sécurisé</p>
-
-          <button style={styles.primaryBtn} onClick={login}>
-            🔐 Se connecter
+      <div style={styles.bg}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={styles.login}>
+          <h1>⚡ Alex Hub</h1>
+          <button style={styles.btn} onClick={login}>
+            🔐 Login
           </button>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div style={styles.bg(dark)}>
+    <div style={styles.bg}>
       <div style={styles.container}>
 
-        {/* HEADER */}
         <div style={styles.header}>
           <h1>⚡ Alex Hub</h1>
-
-          <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={() => setDark(!dark)}>
-              {dark ? "🌙" : "☀️"}
-            </button>
-            <button onClick={logout}>Logout</button>
-          </div>
+          <button onClick={logout}>Logout</button>
         </div>
 
-        {/* NAV */}
         <div style={styles.nav}>
           <button onClick={() => setView("all")}>🌍 All</button>
           <button onClick={() => setView("software")}>💻 Software</button>
@@ -128,52 +122,52 @@ export default function App() {
           <button onClick={() => setView("adobe")}>🎨 Adobe</button>
         </div>
 
-        {/* SEARCH */}
         <input
           style={styles.search}
-          placeholder="Search apps..."
+          placeholder="Search..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        {/* FORM */}
-        <div style={styles.form}>
-          <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-          <input placeholder="URL" value={url} onChange={(e) => setUrl(e.target.value)} />
-          <input placeholder="Logo" value={logo} onChange={(e) => setLogo(e.target.value)} />
+        {isAdmin && (
+          <div style={styles.admin}>
+            <h3>Admin Panel</h3>
 
-          <select value={category} onChange={(e) => setCategory(e.target.value)}>
-            <option value="Software">💻 Software</option>
-            <option value="Torrents">📦 Torrents</option>
-            <option value="Adobe">🎨 Adobe</option>
-          </select>
+            <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+            <input placeholder="URL" value={url} onChange={(e) => setUrl(e.target.value)} />
+            <input placeholder="Logo" value={logo} onChange={(e) => setLogo(e.target.value)} />
 
-          <button onClick={addApp} style={styles.primaryBtn}>
-            + Add
-          </button>
-        </div>
+            <select value={category} onChange={(e) => setCategory(e.target.value)}>
+              <option value="Software">Software</option>
+              <option value="Torrents">Torrents</option>
+              <option value="Adobe">Adobe</option>
+            </select>
 
-        {/* GRID */}
+            <button onClick={addApp} style={styles.btn}>+ Add</button>
+          </div>
+        )}
+
         <div style={styles.grid}>
           {filtered.map((app) => (
-            <div key={app.id} style={styles.card(dark)}>
-
+            <motion.div
+              key={app.id}
+              whileHover={{ scale: 1.05 }}
+              style={styles.card}
+            >
               <img src={app.logo} style={styles.logo} />
 
               <div style={{ flex: 1 }}>
                 <b>{app.name}</b>
-
                 <div style={styles.tag}>{app.category}</div>
-
-                <a href={app.url} target="_blank" style={styles.link}>
-                  Open →
-                </a>
+                <a href={app.url} target="_blank">Open →</a>
               </div>
 
               <button onClick={() => toggleFav(app.id)}>⭐</button>
-              <button onClick={() => remove(app.id)}>✕</button>
 
-            </div>
+              {isAdmin && (
+                <button onClick={() => remove(app.id)}>✕</button>
+              )}
+            </motion.div>
           ))}
         </div>
 
@@ -182,17 +176,13 @@ export default function App() {
   );
 }
 
-/* 🎨 CLEAN DESIGN SYSTEM */
 const styles = {
-  bg: (dark) => ({
+  bg: {
     minHeight: "100vh",
     padding: 30,
     color: "white",
-    background: dark
-      ? "radial-gradient(circle at top,#1c1c1c,#0d0d0d)"
-      : "#f6f6f6",
-    transition: "0.3s",
-  }),
+    background: "linear-gradient(135deg,#0f0c29,#302b63,#24243e)",
+  },
 
   container: { maxWidth: 1000, margin: "auto" },
 
@@ -206,7 +196,6 @@ const styles = {
     display: "flex",
     gap: 10,
     marginBottom: 15,
-    flexWrap: "wrap",
   },
 
   search: {
@@ -215,14 +204,16 @@ const styles = {
     borderRadius: 12,
     marginBottom: 20,
     border: "none",
-    outline: "none",
   },
 
-  form: {
-    display: "flex",
-    gap: 10,
-    flexWrap: "wrap",
+  admin: {
+    padding: 15,
+    borderRadius: 16,
+    background: "rgba(255,255,255,0.08)",
     marginBottom: 20,
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
   },
 
   grid: {
@@ -231,15 +222,13 @@ const styles = {
     gap: 15,
   },
 
-  card: (dark) => ({
+  card: {
     display: "flex",
     gap: 12,
     padding: 14,
     borderRadius: 18,
-    background: dark ? "rgba(255,255,255,0.06)" : "white",
-    transition: "0.2s",
-    transform: "translateY(0)",
-  }),
+    background: "rgba(255,255,255,0.08)",
+  },
 
   logo: {
     width: 42,
@@ -250,29 +239,20 @@ const styles = {
   tag: {
     fontSize: 12,
     opacity: 0.6,
-    marginTop: 4,
   },
 
-  link: {
-    display: "block",
-    marginTop: 6,
-    color: "#60a5fa",
-    textDecoration: "none",
-  },
-
-  primaryBtn: {
+  btn: {
     padding: 10,
-    background: "#4f46e5",
+    background: "#7c3aed",
     color: "white",
     border: "none",
     borderRadius: 10,
   },
 
-  loginCard: {
+  login: {
     textAlign: "center",
     padding: 50,
     borderRadius: 20,
-    background: "rgba(255,255,255,0.06)",
-    backdropFilter: "blur(10px)",
+    background: "rgba(255,255,255,0.08)",
   },
 };
