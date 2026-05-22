@@ -52,7 +52,6 @@ export default function App() {
   const logout = () => signOut(auth);
 
   const addApp = async () => {
-    if (!isAdmin) return;
     if (!name || !url || !logo) return;
 
     await addDoc(collection(db, "apps"), {
@@ -108,6 +107,7 @@ export default function App() {
           <button onClick={logout}>Logout</button>
         </div>
 
+        {/* NAV CATEGORIES */}
         <div style={styles.nav}>
           <button onClick={() => setView("all")}>🌍 All</button>
           <button onClick={() => setView("software")}>💻 Software</button>
@@ -115,6 +115,7 @@ export default function App() {
           <button onClick={() => setView("adobe")}>🎨 Adobe</button>
         </div>
 
+        {/* SEARCH */}
         <input
           style={styles.search}
           placeholder="Search..."
@@ -122,44 +123,43 @@ export default function App() {
           onChange={(e) => setSearch(e.target.value)}
         />
 
-        {/* 🔐 ADMIN PANEL (VISIBLE UNIQUEMENT POUR TOI) */}
-        {isAdmin && (
-          <div style={styles.admin}>
-            <h3>➕ Admin Panel</h3>
+        {/* ➕ AJOUT (VISIBLE POUR TOI ET LES AUTRES SI TU VEUX) */}
+        <div style={styles.admin}>
+          <h3>➕ Ajouter un lien</h3>
 
-            <input
-              placeholder="Nom"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+          <input
+            placeholder="Nom"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
 
-            <input
-              placeholder="Lien URL"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-            />
+          <input
+            placeholder="Lien URL"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+          />
 
-            <input
-              placeholder="Logo URL"
-              value={logo}
-              onChange={(e) => setLogo(e.target.value)}
-            />
+          <input
+            placeholder="Logo URL"
+            value={logo}
+            onChange={(e) => setLogo(e.target.value)}
+          />
 
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            >
-              <option value="Software">💻 Software</option>
-              <option value="Torrents">📦 Torrents</option>
-              <option value="Adobe">🎨 Adobe</option>
-            </select>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option value="Software">💻 Software</option>
+            <option value="Torrents">📦 Torrents</option>
+            <option value="Adobe">🎨 Adobe</option>
+          </select>
 
-            <button onClick={addApp} style={styles.btn}>
-              ➕ Ajouter
-            </button>
-          </div>
-        )}
+          <button onClick={addApp} style={styles.btn}>
+            ➕ Ajouter
+          </button>
+        </div>
 
+        {/* GRID */}
         <div style={styles.grid}>
           {filtered.map((app) => (
             <div key={app.id} style={styles.card}>
@@ -171,7 +171,7 @@ export default function App() {
                 <a href={app.url} target="_blank">Open →</a>
               </div>
 
-              {/* 🔐 DELETE UNIQUEMENT ADMIN */}
+              {/* ❌ suppression uniquement admin */}
               {isAdmin && (
                 <button onClick={() => remove(app.id)}>✕</button>
               )}
@@ -184,7 +184,7 @@ export default function App() {
   );
 }
 
-/* 🎨 STYLE */
+/* 🎨 STYLE IDENTIQUE (RIEN PERDU) */
 const styles = {
   bg: {
     minHeight: "100vh",
