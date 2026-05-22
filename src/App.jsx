@@ -36,8 +36,8 @@ export default function App() {
   return (
     <div style={styles.page}>
       <div style={styles.container}>
-        <h1 style={styles.title}>🔗 Mon espace de liens</h1>
-        <p style={styles.subtitle}>Style Notion / Apple ✨</p>
+        <h1 style={styles.title}>🔗 Created by <Alex></Alex></h1>
+        <p style={styles.subtitle}>Crack <Link></Link> ✨</p>
 
         {/* FORM */}
         <div style={styles.card}>
