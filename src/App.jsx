@@ -9,10 +9,18 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 
-import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signOut,
+} from "firebase/auth";
 
 export default function App() {
   const [apps, setApps] = useState([]);
+  const [user, setUser] = useState(null);
+
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
   const [logo, setLogo] = useState("");
@@ -20,15 +28,16 @@ export default function App() {
   const auth = getAuth();
   const provider = new GoogleAuthProvider();
 
-  const login = async () => {
-  try {
-    const result = await signInWithPopup(auth, provider);
-    console.log("User:", result.user);
-  } catch (error) {
-    console.log("Login error:", error.message);
-  }
-};
+  // 🔐 AUTH STATE
+  useEffect(() => {
+    const unsubAuth = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+    });
 
+    return () => unsubAuth();
+  }, []);
+
+  // 🌍 DATA
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "apps"), (snapshot) => {
       setApps(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
@@ -36,6 +45,14 @@ export default function App() {
 
     return () => unsub();
   }, []);
+
+  const login = async () => {
+    await signInWithPopup(auth, provider);
+  };
+
+  const logout = async () => {
+    await signOut(auth);
+  };
 
   const addApp = async () => {
     if (!name || !url || !logo) return;
@@ -55,34 +72,36 @@ export default function App() {
     await deleteDoc(doc(db, "apps", id));
   };
 
+  // 🔐 ECRAN LOGIN
+  if (!user) {
+    return (
+      <div style={styles.loginPage}>
+        <div style={styles.loginBox}>
+          <h1>🔥 Alex Crack</h1>
+          <p>Connecte-toi pour accéder au site</p>
+
+          <button style={styles.loginBtn} onClick={login}>
+            🔐 Se connecter avec Google
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 🌍 SITE NORMAL
   return (
     <div style={styles.page}>
       <div style={styles.container}>
 
-        <button onClick={login} style={styles.login}>
-          🔐 Se connecter Google
-        </button>
-
-        <h1 style={styles.title}>🔥 Alex Crack</h1>
+        <div style={styles.topBar}>
+          <h1>🔥 Alex Crack</h1>
+          <button onClick={logout}>Déconnexion</button>
+        </div>
 
         <div style={styles.card}>
-          <input
-            placeholder="Nom"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-
-          <input
-            placeholder="Lien"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-          />
-
-          <input
-            placeholder="Logo URL"
-            value={logo}
-            onChange={(e) => setLogo(e.target.value)}
-          />
+          <input placeholder="Nom" value={name} onChange={(e) => setName(e.target.value)} />
+          <input placeholder="Lien" value={url} onChange={(e) => setUrl(e.target.value)} />
+          <input placeholder="Logo URL" value={logo} onChange={(e) => setLogo(e.target.value)} />
 
           <button onClick={addApp}>Ajouter</button>
         </div>
@@ -94,11 +113,8 @@ export default function App() {
               <div>
                 <b>{app.name}</b>
                 <br />
-                <a href={app.url} target="_blank">
-                  ouvrir
-                </a>
+                <a href={app.url} target="_blank">ouvrir</a>
               </div>
-
               <button onClick={() => deleteApp(app.id)}>X</button>
             </div>
           ))}
@@ -110,6 +126,25 @@ export default function App() {
 }
 
 const styles = {
+  loginPage: {
+    height: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    background: "#111",
+    color: "white",
+  },
+  loginBox: {
+    textAlign: "center",
+    padding: 40,
+    borderRadius: 20,
+    background: "#1f1f1f",
+  },
+  loginBtn: {
+    padding: 12,
+    marginTop: 20,
+    cursor: "pointer",
+  },
   page: {
     padding: 30,
     background: "#111",
@@ -119,6 +154,11 @@ const styles = {
   container: {
     maxWidth: 700,
     margin: "auto",
+  },
+  topBar: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   card: {
     display: "flex",
@@ -131,10 +171,5 @@ const styles = {
     gap: 10,
     marginBottom: 10,
     alignItems: "center",
-  },
-  login: {
-    marginBottom: 20,
-    padding: 10,
-    cursor: "pointer",
   },
 };
