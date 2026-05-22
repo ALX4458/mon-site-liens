@@ -28,16 +28,16 @@ export default function App() {
   const auth = getAuth();
   const provider = new GoogleAuthProvider();
 
-  // 🔐 AUTH STATE
+  // 🔐 USER STATE
   useEffect(() => {
-    const unsubAuth = onAuthStateChanged(auth, (u) => {
+    const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
     });
 
-    return () => unsubAuth();
+    return () => unsub();
   }, []);
 
-  // 🌍 DATA
+  // 🌍 DATA FIRESTORE
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "apps"), (snapshot) => {
       setApps(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
@@ -46,14 +46,21 @@ export default function App() {
     return () => unsub();
   }, []);
 
+  // 🔐 LOGIN
   const login = async () => {
-    await signInWithPopup(auth, provider);
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.log("Login error:", error.code, error.message);
+    }
   };
 
-  const logout = async () => {
+  // 🚪 RESET / LOGOUT
+  const resetLogin = async () => {
     await signOut(auth);
   };
 
+  // ➕ ADD APP
   const addApp = async () => {
     if (!name || !url || !logo) return;
 
@@ -68,11 +75,12 @@ export default function App() {
     setLogo("");
   };
 
+  // ❌ DELETE
   const deleteApp = async (id) => {
     await deleteDoc(doc(db, "apps", id));
   };
 
-  // 🔐 ECRAN LOGIN
+  // 🔐 LOGIN SCREEN
   if (!user) {
     return (
       <div style={styles.loginPage}>
@@ -83,25 +91,46 @@ export default function App() {
           <button style={styles.loginBtn} onClick={login}>
             🔐 Se connecter avec Google
           </button>
+
+          <button onClick={resetLogin} style={{ marginTop: 10 }}>
+            🔄 Reset connexion
+          </button>
         </div>
       </div>
     );
   }
 
-  // 🌍 SITE NORMAL
+  // 🌍 APP
   return (
     <div style={styles.page}>
       <div style={styles.container}>
 
         <div style={styles.topBar}>
           <h1>🔥 Alex Crack</h1>
-          <button onClick={logout}>Déconnexion</button>
+
+          <div>
+            <button onClick={resetLogin}>Déconnexion</button>
+          </div>
         </div>
 
         <div style={styles.card}>
-          <input placeholder="Nom" value={name} onChange={(e) => setName(e.target.value)} />
-          <input placeholder="Lien" value={url} onChange={(e) => setUrl(e.target.value)} />
-          <input placeholder="Logo URL" value={logo} onChange={(e) => setLogo(e.target.value)} />
+          <input
+            placeholder="Nom"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+
+          <input
+            placeholder="Lien"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+          />
+
+          <input
+            placeholder="Logo URL"
+            value={logo}
+            onChange={(e) => setLogo(e.target.value)}
+          />
 
           <button onClick={addApp}>Ajouter</button>
         </div>
