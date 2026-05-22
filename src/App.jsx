@@ -39,7 +39,7 @@ export default function App() {
     <div style={styles.page}>
       <div style={styles.container}>
         <h1 style={styles.title}>🚀 Mon bibliothèque de logiciels</h1>
-        <p style={styles.subtitle}>Style App Store / Notion</p>
+        <h1>🔥 Alex Crack</h1>
 
         {/* FORM */}
         <div style={styles.card}>
