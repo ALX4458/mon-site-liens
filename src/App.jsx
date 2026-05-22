@@ -28,39 +28,21 @@ export default function App() {
   const auth = getAuth();
   const provider = new GoogleAuthProvider();
 
-  // 🔐 USER STATE
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-    });
-
+    const unsub = onAuthStateChanged(auth, (u) => setUser(u));
     return () => unsub();
   }, []);
 
-  // 🌍 DATA FIRESTORE
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "apps"), (snapshot) => {
-      setApps(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
+    const unsub = onSnapshot(collection(db, "apps"), (snap) => {
+      setApps(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
-
     return () => unsub();
   }, []);
 
-  // 🔐 LOGIN
-  const login = async () => {
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.log("Login error:", error.code, error.message);
-    }
-  };
+  const login = () => signInWithPopup(auth, provider);
+  const logout = () => signOut(auth);
 
-  // 🚪 RESET / LOGOUT
-  const resetLogin = async () => {
-    await signOut(auth);
-  };
-
-  // ➕ ADD APP
   const addApp = async () => {
     if (!name || !url || !logo) return;
 
@@ -75,76 +57,60 @@ export default function App() {
     setLogo("");
   };
 
-  // ❌ DELETE
-  const deleteApp = async (id) => {
+  const remove = async (id) => {
     await deleteDoc(doc(db, "apps", id));
   };
 
-  // 🔐 LOGIN SCREEN
   if (!user) {
     return (
-      <div style={styles.loginPage}>
-        <div style={styles.loginBox}>
-          <h1>🔥 Alex Crack</h1>
-          <p>Connecte-toi pour accéder au site</p>
+      <div style={styles.bg}>
+        <div style={styles.loginCard}>
+          <h1 style={styles.title}>Alex Crack</h1>
+          <p style={styles.sub}>Accès privé</p>
 
-          <button style={styles.loginBtn} onClick={login}>
+          <button style={styles.primaryBtn} onClick={login}>
             🔐 Se connecter avec Google
-          </button>
-
-          <button onClick={resetLogin} style={{ marginTop: 10 }}>
-            🔄 Reset connexion
           </button>
         </div>
       </div>
     );
   }
 
-  // 🌍 APP
   return (
-    <div style={styles.page}>
+    <div style={styles.bg}>
       <div style={styles.container}>
 
-        <div style={styles.topBar}>
-          <h1>🔥 Alex Crack</h1>
-
-          <div>
-            <button onClick={resetLogin}>Déconnexion</button>
-          </div>
+        <div style={styles.header}>
+          <h1 style={styles.title}>Alex Crack</h1>
+          <button style={styles.logoutBtn} onClick={logout}>
+            Logout
+          </button>
         </div>
 
-        <div style={styles.card}>
-          <input
-            placeholder="Nom"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+        <div style={styles.formCard}>
+          <input style={styles.input} placeholder="Nom" value={name} onChange={(e) => setName(e.target.value)} />
+          <input style={styles.input} placeholder="Lien" value={url} onChange={(e) => setUrl(e.target.value)} />
+          <input style={styles.input} placeholder="Logo URL" value={logo} onChange={(e) => setLogo(e.target.value)} />
 
-          <input
-            placeholder="Lien"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-          />
-
-          <input
-            placeholder="Logo URL"
-            value={logo}
-            onChange={(e) => setLogo(e.target.value)}
-          />
-
-          <button onClick={addApp}>Ajouter</button>
+          <button style={styles.primaryBtn} onClick={addApp}>
+            + Ajouter
+          </button>
         </div>
 
-        <div>
+        <div style={styles.grid}>
           {apps.map((app) => (
-            <div key={app.id} style={styles.item}>
-              <img src={app.logo} width="40" />
+            <div key={app.id} style={styles.card}>
+              <img src={app.logo} style={styles.logo} />
               <div>
-                <b>{app.name}</b>
-                <br />
-                <a href={app.url} target="_blank">ouvrir</a>
+                <h3 style={styles.appName}>{app.name}</h3>
+                <a href={app.url} target="_blank" style={styles.link}>
+                  Ouvrir →
+                </a>
               </div>
-              <button onClick={() => deleteApp(app.id)}>X</button>
+
+              <button style={styles.deleteBtn} onClick={() => remove(app.id)}>
+                ✕
+              </button>
             </div>
           ))}
         </div>
@@ -155,50 +121,107 @@ export default function App() {
 }
 
 const styles = {
-  loginPage: {
-    height: "100vh",
+  bg: {
+    minHeight: "100vh",
+    background: "linear-gradient(135deg,#0f0f0f,#1b1b1b)",
+    color: "white",
     display: "flex",
     justifyContent: "center",
-    alignItems: "center",
-    background: "#111",
-    color: "white",
-  },
-  loginBox: {
-    textAlign: "center",
-    padding: 40,
-    borderRadius: 20,
-    background: "#1f1f1f",
-  },
-  loginBtn: {
-    padding: 12,
-    marginTop: 20,
-    cursor: "pointer",
-  },
-  page: {
     padding: 30,
-    background: "#111",
-    color: "white",
-    minHeight: "100vh",
   },
   container: {
-    maxWidth: 700,
-    margin: "auto",
+    width: "100%",
+    maxWidth: 900,
   },
-  topBar: {
+  header: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 30,
   },
-  card: {
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    letterSpacing: 1,
+  },
+  sub: {
+    opacity: 0.6,
+  },
+  loginCard: {
+    background: "rgba(255,255,255,0.05)",
+    padding: 40,
+    borderRadius: 20,
+    textAlign: "center",
+    backdropFilter: "blur(10px)",
+  },
+  formCard: {
+    background: "rgba(255,255,255,0.05)",
+    padding: 20,
+    borderRadius: 16,
     display: "flex",
     flexDirection: "column",
     gap: 10,
-    marginBottom: 20,
+    marginBottom: 25,
+    backdropFilter: "blur(10px)",
   },
-  item: {
+  input: {
+    padding: 12,
+    borderRadius: 10,
+    border: "none",
+    outline: "none",
+  },
+  primaryBtn: {
+    padding: 12,
+    borderRadius: 10,
+    border: "none",
+    cursor: "pointer",
+    background: "#4f46e5",
+    color: "white",
+    fontWeight: "bold",
+  },
+  logoutBtn: {
+    background: "transparent",
+    border: "1px solid white",
+    color: "white",
+    padding: "8px 12px",
+    borderRadius: 10,
+    cursor: "pointer",
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
+    gap: 15,
+  },
+  card: {
+    background: "rgba(255,255,255,0.05)",
+    padding: 15,
+    borderRadius: 16,
     display: "flex",
-    gap: 10,
-    marginBottom: 10,
     alignItems: "center",
+    gap: 12,
+    backdropFilter: "blur(10px)",
+    position: "relative",
+  },
+  logo: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+  },
+  appName: {
+    margin: 0,
+  },
+  link: {
+    color: "#60a5fa",
+    textDecoration: "none",
+  },
+  deleteBtn: {
+    position: "absolute",
+    right: 10,
+    top: 10,
+    background: "transparent",
+    border: "none",
+    color: "white",
+    cursor: "pointer",
+    fontSize: 16,
   },
 };
