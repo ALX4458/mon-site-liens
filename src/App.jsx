@@ -24,11 +24,12 @@ export default function App() {
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
   const [logo, setLogo] = useState("");
-
   const [category, setCategory] = useState("Software");
+
   const [view, setView] = useState("all");
   const [search, setSearch] = useState("");
   const [dark, setDark] = useState(true);
+  const [favorites, setFavorites] = useState([]);
 
   const auth = getAuth();
   const provider = new GoogleAuthProvider();
@@ -67,6 +68,14 @@ export default function App() {
     await deleteDoc(doc(db, "apps", id));
   };
 
+  const toggleFav = (id) => {
+    setFavorites((prev) =>
+      prev.includes(id)
+        ? prev.filter((f) => f !== id)
+        : [...prev, id]
+    );
+  };
+
   const filtered = useMemo(() => {
     let list = apps;
 
@@ -76,6 +85,10 @@ export default function App() {
 
     if (view === "torrents") {
       list = list.filter((a) => a.category === "Torrents");
+    }
+
+    if (view === "adobe") {
+      list = list.filter((a) => a.category === "Adobe");
     }
 
     return list.filter((a) =>
@@ -88,8 +101,10 @@ export default function App() {
       <div style={styles.bg(dark)}>
         <div style={styles.loginCard}>
           <h1>🔥 Alex Crack</h1>
+          <p style={{ opacity: 0.6 }}>Accès privé</p>
+
           <button onClick={login} style={styles.primaryBtn}>
-            🔐 Se connecter Google
+            🔐 Login Google
           </button>
         </div>
       </div>
@@ -108,21 +123,21 @@ export default function App() {
             <button onClick={() => setDark(!dark)}>
               {dark ? "🌞" : "🌙"}
             </button>
-
             <button onClick={logout}>Logout</button>
           </div>
         </div>
 
-        {/* NAV */}
+        {/* NAV TABS */}
         <div style={styles.nav}>
           <button onClick={() => setView("all")}>🌍 Tout</button>
           <button onClick={() => setView("software")}>💻 Logiciels</button>
           <button onClick={() => setView("torrents")}>📦 Torrents</button>
+          <button onClick={() => setView("adobe")}>🎨 Adobe</button>
         </div>
 
         {/* SEARCH */}
         <input
-          placeholder="🔎 Search..."
+          placeholder="🔎 Search apps..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={styles.search}
@@ -135,14 +150,13 @@ export default function App() {
           <input placeholder="Logo URL" value={logo} onChange={(e) => setLogo(e.target.value)} />
 
           <select value={category} onChange={(e) => setCategory(e.target.value)}>
-            <option value="Software">💻 Logiciels</option>
+            <option value="Software">💻 Software</option>
             <option value="Torrents">📦 Torrents</option>
             <option value="Adobe">🎨 Adobe</option>
-            <option value="Tools">🧰 Tools</option>
           </select>
 
           <button onClick={addApp} style={styles.primaryBtn}>
-            + Ajouter
+            + Add
           </button>
         </div>
 
@@ -150,20 +164,26 @@ export default function App() {
         <div style={styles.grid}>
           {filtered.map((app) => (
             <div key={app.id} style={styles.card(dark)}>
+
               <img src={app.logo} style={styles.logo} />
 
               <div style={{ flex: 1 }}>
                 <b>{app.name}</b>
-                <div style={{ fontSize: 12, opacity: 0.6 }}>
-                  {app.category}
-                </div>
 
-                <a href={app.url} target="_blank">
-                  Ouvrir →
+                <div style={styles.tag}>{app.category}</div>
+
+                <a href={app.url} target="_blank" style={styles.link}>
+                  Open →
                 </a>
               </div>
 
-              <button onClick={() => remove(app.id)}>✕</button>
+              <button onClick={() => toggleFav(app.id)}>
+                ⭐
+              </button>
+
+              <button onClick={() => remove(app.id)}>
+                ✕
+              </button>
             </div>
           ))}
         </div>
@@ -173,18 +193,19 @@ export default function App() {
   );
 }
 
-/* STYLE */
+/* 🎨 ULTRA DESIGN */
 const styles = {
   bg: (dark) => ({
     minHeight: "100vh",
     padding: 30,
     color: "white",
     background: dark
-      ? "linear-gradient(135deg,#0f0f0f,#1b1b1b)"
+      ? "radial-gradient(circle at top,#1b1b1b,#0f0f0f)"
       : "linear-gradient(135deg,#f5f5f5,#ffffff)",
+    transition: "0.3s",
   }),
 
-  container: { maxWidth: 900, margin: "auto" },
+  container: { maxWidth: 950, margin: "auto" },
 
   header: {
     display: "flex",
@@ -200,36 +221,56 @@ const styles = {
 
   search: {
     width: "100%",
-    padding: 12,
-    borderRadius: 10,
+    padding: 14,
+    borderRadius: 12,
     marginBottom: 20,
+    border: "none",
+    outline: "none",
   },
 
   form: {
     display: "flex",
     gap: 10,
     flexWrap: "wrap",
-    marginBottom: 20,
+    marginBottom: 25,
   },
 
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
+    gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
     gap: 15,
   },
 
   card: (dark) => ({
     display: "flex",
-    gap: 10,
-    padding: 12,
-    borderRadius: 16,
-    background: dark ? "rgba(255,255,255,0.05)" : "white",
+    gap: 12,
+    padding: 14,
+    borderRadius: 18,
+    background: dark
+      ? "rgba(255,255,255,0.06)"
+      : "rgba(255,255,255,0.9)",
+    backdropFilter: "blur(10px)",
+    transition: "0.3s",
+    transform: "scale(1)",
   }),
 
   logo: {
-    width: 40,
-    height: 40,
+    width: 42,
+    height: 42,
     borderRadius: 10,
+  },
+
+  tag: {
+    fontSize: 12,
+    opacity: 0.7,
+    marginTop: 4,
+  },
+
+  link: {
+    display: "block",
+    marginTop: 5,
+    color: "#60a5fa",
+    textDecoration: "none",
   },
 
   primaryBtn: {
@@ -242,8 +283,9 @@ const styles = {
 
   loginCard: {
     textAlign: "center",
-    padding: 40,
+    padding: 50,
     borderRadius: 20,
-    background: "rgba(255,255,255,0.05)",
+    background: "rgba(255,255,255,0.06)",
+    backdropFilter: "blur(10px)",
   },
 };
