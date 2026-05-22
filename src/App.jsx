@@ -24,13 +24,11 @@ export default function App() {
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
   const [logo, setLogo] = useState("");
-  const [category, setCategory] = useState("Software");
 
+  const [category, setCategory] = useState("Software");
+  const [view, setView] = useState("all");
   const [search, setSearch] = useState("");
   const [dark, setDark] = useState(true);
-
-  const [view, setView] = useState("all");
-  const [favorites, setFavorites] = useState([]);
 
   const auth = getAuth();
   const provider = new GoogleAuthProvider();
@@ -69,20 +67,15 @@ export default function App() {
     await deleteDoc(doc(db, "apps", id));
   };
 
-  const toggleFav = (id) => {
-    setFavorites((prev) =>
-      prev.includes(id)
-        ? prev.filter((f) => f !== id)
-        : [...prev, id]
-    );
-  };
-
   const filtered = useMemo(() => {
     let list = apps;
 
-    // 💻 SECTION LOGICIELS
     if (view === "software") {
       list = list.filter((a) => a.category === "Software");
+    }
+
+    if (view === "torrents") {
+      list = list.filter((a) => a.category === "Torrents");
     }
 
     return list.filter((a) =>
@@ -90,7 +83,6 @@ export default function App() {
     );
   }, [apps, search, view]);
 
-  // 🔐 LOGIN SCREEN
   if (!user) {
     return (
       <div style={styles.bg(dark)}>
@@ -121,18 +113,19 @@ export default function App() {
           </div>
         </div>
 
-        {/* NAVIGATION */}
+        {/* NAV */}
         <div style={styles.nav}>
           <button onClick={() => setView("all")}>🌍 Tout</button>
           <button onClick={() => setView("software")}>💻 Logiciels</button>
+          <button onClick={() => setView("torrents")}>📦 Torrents</button>
         </div>
 
         {/* SEARCH */}
         <input
           placeholder="🔎 Search..."
-          style={styles.search}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          style={styles.search}
         />
 
         {/* FORM */}
@@ -143,9 +136,9 @@ export default function App() {
 
           <select value={category} onChange={(e) => setCategory(e.target.value)}>
             <option value="Software">💻 Logiciels</option>
-            <option value="Tools">🧰 Tools</option>
+            <option value="Torrents">📦 Torrents</option>
             <option value="Adobe">🎨 Adobe</option>
-            <option value="Dev">💻 Dev</option>
+            <option value="Tools">🧰 Tools</option>
           </select>
 
           <button onClick={addApp} style={styles.primaryBtn}>
@@ -153,11 +146,10 @@ export default function App() {
           </button>
         </div>
 
-        {/* LIST */}
+        {/* GRID */}
         <div style={styles.grid}>
           {filtered.map((app) => (
             <div key={app.id} style={styles.card(dark)}>
-
               <img src={app.logo} style={styles.logo} />
 
               <div style={{ flex: 1 }}>
@@ -171,7 +163,6 @@ export default function App() {
                 </a>
               </div>
 
-              <button onClick={() => toggleFav(app.id)}>⭐</button>
               <button onClick={() => remove(app.id)}>✕</button>
             </div>
           ))}
@@ -182,7 +173,7 @@ export default function App() {
   );
 }
 
-/* 🎨 STYLE PRO */
+/* STYLE */
 const styles = {
   bg: (dark) => ({
     minHeight: "100vh",
@@ -193,10 +184,7 @@ const styles = {
       : "linear-gradient(135deg,#f5f5f5,#ffffff)",
   }),
 
-  container: {
-    maxWidth: 900,
-    margin: "auto",
-  },
+  container: { maxWidth: 900, margin: "auto" },
 
   header: {
     display: "flex",
